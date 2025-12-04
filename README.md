@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/OziriEmeka/laravel-llm-suite/master/assets/logo/laravel-llm-suite-logo.png" width="600" alt="Laravel LLM Suite">
+  <img src="https://raw.githubusercontent.com/OziriEmeka/laravel-llm-suite/master/assets/logo/laravel-llm-suite-logo.png" alt="Laravel LLM Suite">
 </p>
 
 # Laravel LLM Suite
