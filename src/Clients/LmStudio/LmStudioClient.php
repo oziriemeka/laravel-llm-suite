@@ -2,51 +2,46 @@
 
 declare(strict_types=1);
 
-namespace Oziri\LlmSuite\Clients\OpenAI;
+namespace Oziri\LlmSuite\Clients\LmStudio;
 
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Oziri\LlmSuite\Contracts\ChatClient;
-use Oziri\LlmSuite\Contracts\ImageClient;
 use Oziri\LlmSuite\Exceptions\ProviderRequestException;
 use Oziri\LlmSuite\Support\ChatResponse;
-use Oziri\LlmSuite\Support\ImageResponse;
 
 /**
- * OpenAI API client implementation.
- * Supports both chat completions and image generation.
+ * LM Studio client implementation.
+ * LM Studio provides an OpenAI-compatible local API for running LLMs locally.
+ * 
+ * @see https://lmstudio.ai/
  */
-class OpenAIClient implements ChatClient, ImageClient
+class LmStudioClient implements ChatClient
 {
     /**
-     * Default base URL for OpenAI API.
+     * Default host for LM Studio server.
      */
-    protected const DEFAULT_BASE_URL = 'https://api.openai.com/v1';
+    protected const DEFAULT_HOST = '127.0.0.1';
 
     /**
-     * Default chat model.
+     * Default port for LM Studio server.
      */
-    protected const DEFAULT_CHAT_MODEL = 'gpt-4.1-mini';
+    protected const DEFAULT_PORT = 1234;
 
     /**
-     * Default image model.
+     * Default timeout in seconds.
      */
-    protected const DEFAULT_IMAGE_MODEL = 'dall-e-3';
+    protected const DEFAULT_TIMEOUT = 120;
 
     /**
-     * Default image size.
+     * Default chat model name.
      */
-    protected const DEFAULT_IMAGE_SIZE = '1024x1024';
+    protected const DEFAULT_CHAT_MODEL = 'local-model';
 
     /**
      * API endpoint for chat completions.
      */
     protected const ENDPOINT_CHAT = '/chat/completions';
-
-    /**
-     * API endpoint for image generation.
-     */
-    protected const ENDPOINT_IMAGES = '/images/generations';
 
     /**
      * API endpoint for listing models.
@@ -56,30 +51,43 @@ class OpenAIClient implements ChatClient, ImageClient
     /**
      * Error message for failed chat requests.
      */
-    protected const ERROR_CHAT_FAILED = 'OpenAI chat request failed';
-
-    /**
-     * Error message for failed image requests.
-     */
-    protected const ERROR_IMAGE_FAILED = 'OpenAI image request failed';
+    protected const ERROR_CHAT_FAILED = 'LM Studio chat request failed';
 
     public function __construct(
         protected array $config
     ) {}
 
     /**
-     * Get a configured HTTP client for OpenAI API requests.
+     * Get the base URL for the LM Studio API.
      */
-    protected function http(): PendingRequest
+    protected function getBaseUrl(): string
     {
-        return Http::withToken($this->config['api_key'])
-            ->baseUrl($this->config['base_url'] ?? self::DEFAULT_BASE_URL)
-            ->acceptJson()
-            ->asJson();
+        $host = $this->config['host'] ?? self::DEFAULT_HOST;
+        $port = $this->config['port'] ?? self::DEFAULT_PORT;
+
+        return "http://{$host}:{$port}/v1";
     }
 
     /**
-     * Send a chat message to OpenAI.
+     * Get a configured HTTP client for LM Studio API requests.
+     */
+    protected function http(): PendingRequest
+    {
+        $request = Http::baseUrl($this->getBaseUrl())
+            ->acceptJson()
+            ->asJson()
+            ->timeout($this->config['timeout'] ?? self::DEFAULT_TIMEOUT);
+
+        // LM Studio doesn't require auth, but accepts it if provided
+        if (! empty($this->config['api_key'])) {
+            $request->withToken($this->config['api_key']);
+        }
+
+        return $request;
+    }
+
+    /**
+     * Send a chat message to LM Studio.
      */
     public function chat(string $prompt, array $options = []): ChatResponse
     {
@@ -112,6 +120,11 @@ class OpenAIClient implements ChatClient, ImageClient
             $payload['top_p'] = $options['top_p'];
         }
 
+        // LM Studio specific: stop sequences
+        if (isset($options['stop'])) {
+            $payload['stop'] = $options['stop'];
+        }
+
         $response = $this->http()->post(self::ENDPOINT_CHAT, $payload);
 
         if (! $response->successful()) {
@@ -133,49 +146,7 @@ class OpenAIClient implements ChatClient, ImageClient
     }
 
     /**
-     * Generate an image using OpenAI's DALL-E.
-     */
-    public function generate(array $params): ImageResponse
-    {
-        $payload = [
-            'model' => $params['model'] ?? $this->config['image_model'] ?? self::DEFAULT_IMAGE_MODEL,
-            'prompt' => $params['prompt'] ?? '',
-            'size' => $params['size'] ?? self::DEFAULT_IMAGE_SIZE,
-            'n' => $params['n'] ?? 1,
-        ];
-
-        // Add optional parameters
-        if (isset($params['quality'])) {
-            $payload['quality'] = $params['quality'];
-        }
-
-        if (isset($params['style'])) {
-            $payload['style'] = $params['style'];
-        }
-
-        if (isset($params['response_format'])) {
-            $payload['response_format'] = $params['response_format'];
-        }
-
-        $response = $this->http()->post(self::ENDPOINT_IMAGES, $payload);
-
-        if (! $response->successful()) {
-            throw ProviderRequestException::fromResponse(self::ERROR_IMAGE_FAILED, $response);
-        }
-
-        $data = $response->json();
-        $imageData = $data['data'][0] ?? [];
-
-        return new ImageResponse(
-            url: $imageData['url'] ?? null,
-            base64: $imageData['b64_json'] ?? null,
-            raw: $data,
-            revisedPrompt: $imageData['revised_prompt'] ?? null,
-        );
-    }
-
-    /**
-     * Check if the OpenAI API is accessible.
+     * Check if LM Studio server is running and accessible.
      */
     public function isAvailable(): bool
     {
@@ -188,7 +159,7 @@ class OpenAIClient implements ChatClient, ImageClient
     }
 
     /**
-     * Get the list of available models from OpenAI.
+     * Get the list of available models from LM Studio.
      */
     public function getAvailableModels(): array
     {

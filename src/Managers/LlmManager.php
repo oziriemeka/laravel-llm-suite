@@ -7,6 +7,7 @@ namespace Oziri\LlmSuite\Managers;
 use Illuminate\Support\Arr;
 use Oziri\LlmSuite\Clients\Anthropic\AnthropicClient;
 use Oziri\LlmSuite\Clients\Dummy\DummyClient;
+use Oziri\LlmSuite\Clients\LmStudio\LmStudioClient;
 use Oziri\LlmSuite\Clients\OpenAI\OpenAIClient;
 use Oziri\LlmSuite\Contracts\ChatClient;
 use Oziri\LlmSuite\Contracts\ImageClient;
@@ -165,6 +166,7 @@ class LlmManager
         return match ($driver) {
             'openai' => $this->createOpenAiClient($config),
             'anthropic' => $this->createAnthropicClient($config),
+            'lmstudio' => $this->createLmStudioClient($config),
             'dummy' => $this->createDummyClient($config),
             default => throw ProviderConfigException::unsupportedDriver($driver ?? 'null'),
         };
@@ -184,6 +186,14 @@ class LlmManager
     protected function createAnthropicClient(array $config): AnthropicClient
     {
         return new AnthropicClient($config);
+    }
+
+    /**
+     * Create an LM Studio client instance.
+     */
+    protected function createLmStudioClient(array $config): LmStudioClient
+    {
+        return new LmStudioClient($config);
     }
 
     /**

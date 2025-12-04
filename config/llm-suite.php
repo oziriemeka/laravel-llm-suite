@@ -43,6 +43,15 @@ return [
             'chat_model' => env('ANTHROPIC_CHAT_MODEL', 'claude-3-5-sonnet-20241022'),
         ],
 
+        'lmstudio' => [
+            'driver' => 'lmstudio',
+            'host' => env('LMSTUDIO_HOST', '127.0.0.1'),
+            'port' => env('LMSTUDIO_PORT', 1234),
+            'api_key' => env('LMSTUDIO_API_KEY'), // Optional - LM Studio doesn't require auth by default
+            'chat_model' => env('LMSTUDIO_CHAT_MODEL', 'local-model'),
+            'timeout' => env('LMSTUDIO_TIMEOUT', 120), // Local models can be slow
+        ],
+
         'dummy' => [
             'driver' => 'dummy',
             // Optional: set default responses for testing

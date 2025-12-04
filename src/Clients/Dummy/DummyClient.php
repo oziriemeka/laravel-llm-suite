@@ -15,6 +15,21 @@ use Oziri\LlmSuite\Support\ImageResponse;
  */
 class DummyClient implements ChatClient, ImageClient
 {
+    /**
+     * Default model name for dummy responses.
+     */
+    protected const DEFAULT_MODEL = 'dummy-model';
+
+    /**
+     * Default ID prefix for dummy responses.
+     */
+    protected const DEFAULT_ID_PREFIX = 'dummy-';
+
+    /**
+     * Default image URL for dummy responses.
+     */
+    protected const DEFAULT_IMAGE_URL = 'https://example.com/dummy-image.png';
+
     protected ?string $chatResponse = null;
     protected ?string $imageUrl = null;
     protected array $chatHistory = [];
@@ -93,8 +108,8 @@ class DummyClient implements ChatClient, ImageClient
                 'prompt' => $prompt,
                 'options' => $options,
             ],
-            model: 'dummy-model',
-            id: 'dummy-' . uniqid(),
+            model: self::DEFAULT_MODEL,
+            id: self::DEFAULT_ID_PREFIX . uniqid(),
             latencyMs: 0.0,
         );
     }
@@ -106,7 +121,7 @@ class DummyClient implements ChatClient, ImageClient
     {
         $this->imageHistory[] = $params;
 
-        $url = $this->imageUrl ?? 'https://example.com/dummy-image.png';
+        $url = $this->imageUrl ?? self::DEFAULT_IMAGE_URL;
 
         return new ImageResponse(
             url: $url,

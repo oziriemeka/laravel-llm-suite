@@ -16,7 +16,35 @@ use Oziri\LlmSuite\Support\ChatResponse;
  */
 class AnthropicClient implements ChatClient
 {
+    /**
+     * Anthropic API version.
+     */
     protected const API_VERSION = '2023-06-01';
+
+    /**
+     * Default base URL for Anthropic API.
+     */
+    protected const DEFAULT_BASE_URL = 'https://api.anthropic.com/v1';
+
+    /**
+     * Default chat model.
+     */
+    protected const DEFAULT_CHAT_MODEL = 'claude-3-5-sonnet-20241022';
+
+    /**
+     * Default max tokens for responses.
+     */
+    protected const DEFAULT_MAX_TOKENS = 4096;
+
+    /**
+     * API endpoint for messages (chat).
+     */
+    protected const ENDPOINT_MESSAGES = '/messages';
+
+    /**
+     * Error message for failed chat requests.
+     */
+    protected const ERROR_CHAT_FAILED = 'Anthropic chat request failed';
 
     public function __construct(
         protected array $config
@@ -31,7 +59,7 @@ class AnthropicClient implements ChatClient
             'x-api-key' => $this->config['api_key'],
             'anthropic-version' => self::API_VERSION,
         ])
-            ->baseUrl($this->config['base_url'] ?? 'https://api.anthropic.com/v1')
+            ->baseUrl($this->config['base_url'] ?? self::DEFAULT_BASE_URL)
             ->acceptJson()
             ->asJson();
     }
@@ -49,9 +77,9 @@ class AnthropicClient implements ChatClient
         ];
 
         $payload = [
-            'model' => $options['model'] ?? $this->config['chat_model'] ?? 'claude-3-5-sonnet-20241022',
+            'model' => $options['model'] ?? $this->config['chat_model'] ?? self::DEFAULT_CHAT_MODEL,
             'messages' => $messages,
-            'max_tokens' => $options['max_tokens'] ?? 4096,
+            'max_tokens' => $options['max_tokens'] ?? self::DEFAULT_MAX_TOKENS,
         ];
 
         // Anthropic handles system prompts separately
@@ -72,10 +100,10 @@ class AnthropicClient implements ChatClient
             $payload['top_k'] = $options['top_k'];
         }
 
-        $response = $this->http()->post('/messages', $payload);
+        $response = $this->http()->post(self::ENDPOINT_MESSAGES, $payload);
 
         if (! $response->successful()) {
-            throw ProviderRequestException::fromResponse('Anthropic chat request failed', $response);
+            throw ProviderRequestException::fromResponse(self::ERROR_CHAT_FAILED, $response);
         }
 
         $latencyMs = (microtime(true) - $startTime) * 1000;

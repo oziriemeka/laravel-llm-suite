@@ -4,15 +4,30 @@ A unified, driver-based Laravel toolkit for working with multiple LLM providers 
 
 ## Features
 
-- **Unified API** - Same interface regardless of provider (OpenAI, Anthropic, etc.)
+- **Unified API** - Same interface regardless of provider (OpenAI, Anthropic, LM Studio, etc.)
 - **Driver Pattern** - Switch providers like Laravel's Storage or Mail systems
+- **Local LLM Support** - Run models locally with LM Studio for development and testing
 - **Laravel Native** - Config files, facades, service providers
 - **Testable** - Built-in faking support for testing without API calls
+
+## Supported Providers
+
+| Provider | Driver | Chat | Image | Models List |
+|----------|--------|:----:|:-----:|:-----------:|
+| **OpenAI** | `openai` | Yes | Yes | Yes |
+| **Anthropic** | `anthropic` | Yes | - | - |
+| **LM Studio** | `lmstudio` | Yes | - | Yes |
+| **Dummy** | `dummy` | Yes | Yes | - |
+
+- **OpenAI** - GPT-4, GPT-4.1, DALL-E 3, and other OpenAI models
+- **Anthropic** - Claude 3.5 Sonnet, Claude 3 Opus, and other Claude models
+- **LM Studio** - Run any open-source LLM locally (Llama, Mistral, Phi, etc.)
+- **Dummy** - For testing and offline development (returns configurable mock responses)
 
 ## Requirements
 
 - PHP 8.1+
-- Laravel 10.x or 11.x
+- Laravel 10.x, 11.x, or 12.x
 
 ## Installation
 
@@ -44,6 +59,12 @@ OPENAI_IMAGE_MODEL=dall-e-3
 # Anthropic
 ANTHROPIC_API_KEY=your-anthropic-api-key
 ANTHROPIC_CHAT_MODEL=claude-3-5-sonnet-20241022
+
+# LM Studio (local)
+LMSTUDIO_HOST=127.0.0.1
+LMSTUDIO_PORT=1234
+LMSTUDIO_API_KEY=        # Optional - leave empty if not using authentication
+LMSTUDIO_TIMEOUT=120
 ```
 
 The configuration file (`config/llm-suite.php`) allows you to customize providers:
@@ -66,6 +87,15 @@ return [
             'api_key' => env('ANTHROPIC_API_KEY'),
             'base_url' => env('ANTHROPIC_BASE_URL', 'https://api.anthropic.com/v1'),
             'chat_model' => env('ANTHROPIC_CHAT_MODEL', 'claude-3-5-sonnet-20241022'),
+        ],
+
+        'lmstudio' => [
+            'driver' => 'lmstudio',
+            'host' => env('LMSTUDIO_HOST', '127.0.0.1'),
+            'port' => env('LMSTUDIO_PORT', 1234),
+            'api_key' => env('LMSTUDIO_API_KEY'),
+            'chat_model' => env('LMSTUDIO_CHAT_MODEL', 'local-model'),
+            'timeout' => env('LMSTUDIO_TIMEOUT', 120),
         ],
 
         'dummy' => [
@@ -105,6 +135,9 @@ $response = Llm::using('anthropic')->chat('Write a Laravel policy example.');
 
 // Switch to dummy for offline development
 $response = Llm::using('dummy')->chat('Test message');
+
+// Use LM Studio for local models
+$response = Llm::using('lmstudio')->chat('Hello from local LLM!');
 ```
 
 ### Override Model Per Request
@@ -148,6 +181,68 @@ $image = Llm::generateImage([
     'size' => '512x512',
     'quality' => 'hd',
 ]);
+```
+
+### Listing Available Models
+
+```php
+use Llm;
+
+// Get available models from OpenAI
+$client = Llm::client('openai');
+$models = $client->getAvailableModels();
+print_r($models);
+// ['gpt-4.1-mini', 'gpt-4.1', 'dall-e-3', ...]
+
+// Check if the API is accessible
+if ($client->isAvailable()) {
+    echo "OpenAI API is accessible!";
+}
+
+// Same works for LM Studio
+$lmClient = Llm::client('lmstudio');
+if ($lmClient->isAvailable()) {
+    $localModels = $lmClient->getAvailableModels();
+    print_r($localModels);
+}
+```
+
+### Using LM Studio (Local LLMs)
+
+LM Studio allows you to run open-source LLMs locally. Perfect for development, testing, or privacy-sensitive applications.
+
+**Setup:**
+1. Download [LM Studio](https://lmstudio.ai/)
+2. Load a model (e.g., Llama, Mistral, Phi)
+3. Start the local server (default: `http://localhost:1234`)
+
+**Usage:**
+```php
+use Llm;
+
+// Basic chat with local model
+$response = Llm::using('lmstudio')->chat('Explain Laravel middleware.');
+
+// Check if LM Studio is running
+$client = Llm::using('lmstudio')->client();
+if ($client->isAvailable()) {
+    echo "LM Studio is running!";
+}
+
+// List available models
+$models = $client->getAvailableModels();
+print_r($models);
+
+// Use a specific local model
+$response = Llm::using('lmstudio')->chat('Hello!', [
+    'model' => 'mistral-7b-instruct',
+    'temperature' => 0.7,
+]);
+```
+
+**Set as default for local development:**
+```env
+LLM_SUITE_DEFAULT=lmstudio
 ```
 
 ### Working with Message History
@@ -281,6 +376,20 @@ $response = Llm::using('my-custom')->chat('Hello!');
 | `Llm::fake()` | Create a fake for testing |
 | `Llm::getProviders()` | List available providers |
 | `Llm::getDefaultProvider()` | Get the default provider name |
+| `Llm::client($name)` | Get the underlying client instance |
+
+### Client Methods (OpenAI, LM Studio)
+
+You can access the underlying client instance using `Llm::client('provider')` to call provider-specific methods:
+
+```php
+$client = Llm::client('openai');    // or 'lmstudio'
+```
+
+| Method | Description |
+|--------|-------------|
+| `$client->isAvailable()` | Check if the API/server is accessible |
+| `$client->getAvailableModels()` | List available models from the provider |
 
 ### ChatResponse Properties
 
@@ -307,6 +416,7 @@ $response = Llm::using('my-custom')->chat('Hello!');
 - [ ] Tool/Function calling
 - [ ] Embeddings API
 - [ ] RAG helpers
+- [x] LM Studio support (local LLMs)
 - [ ] Additional providers (Gemini, Groq, Ollama)
 - [ ] Rate limiting
 - [ ] Caching layer
