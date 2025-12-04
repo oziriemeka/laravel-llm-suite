@@ -1,0 +1,58 @@
+{
+    "name": "oziri/laravel-llm-suite",
+    "description": "A unified driver-based LLM toolkit for Laravel.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "llm",
+        "openai",
+        "anthropic",
+        "claude",
+        "gpt",
+        "ai",
+        "chat",
+        "image-generation"
+    ],
+    "authors": [
+        {
+            "name": "Oziri",
+            "email": "oziri@example.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0|^11.0",
+        "guzzlehttp/guzzle": "^7.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0",
+        "phpunit/phpunit": "^10.0|^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Oziri\\LlmSuite\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Oziri\\LlmSuite\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Oziri\\LlmSuite\\LlmSuiteServiceProvider"
+            ],
+            "aliases": {
+                "Llm": "Oziri\\LlmSuite\\Facades\\Llm"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
+
