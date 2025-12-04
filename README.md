@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/OziriEmeka/laravel-llm-suite/master/assets/logo/laravel-llm-suite-logo.png" width="600" alt="Laravel LLM Suite">
+</p>
+
 # Laravel LLM Suite
 
 A unified, driver-based Laravel toolkit for working with multiple LLM providers for chat, image generation, and more.
