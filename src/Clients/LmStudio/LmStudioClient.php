@@ -20,6 +20,11 @@ use Oziri\LlmSuite\Support\TokenUsage;
 class LmStudioClient implements ChatClient
 {
     /**
+     * Default protocol for LM Studio server.
+     */
+    protected const DEFAULT_PROTOCOL = 'http';
+
+    /**
      * Default host for LM Studio server.
      */
     protected const DEFAULT_HOST = '127.0.0.1';
@@ -63,10 +68,16 @@ class LmStudioClient implements ChatClient
      */
     protected function getBaseUrl(): string
     {
+        // Allow full base_url override for maximum flexibility
+        if (! empty($this->config['base_url'])) {
+            return rtrim($this->config['base_url'], '/');
+        }
+
+        $protocol = $this->config['protocol'] ?? self::DEFAULT_PROTOCOL;
         $host = $this->config['host'] ?? self::DEFAULT_HOST;
         $port = $this->config['port'] ?? self::DEFAULT_PORT;
 
-        return "http://{$host}:{$port}/v1";
+        return "{$protocol}://{$host}:{$port}/v1";
     }
 
     /**

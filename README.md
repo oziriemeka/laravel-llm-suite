@@ -67,10 +67,12 @@ ANTHROPIC_API_KEY=your-anthropic-api-key
 ANTHROPIC_CHAT_MODEL=claude-3-5-sonnet-20241022
 
 # LM Studio (local)
+LMSTUDIO_PROTOCOL=http   # http or https
 LMSTUDIO_HOST=127.0.0.1
 LMSTUDIO_PORT=1234
 LMSTUDIO_API_KEY=        # Optional - leave empty if not using authentication
 LMSTUDIO_TIMEOUT=120
+# LMSTUDIO_BASE_URL=     # Optional - override protocol/host/port with full URL
 
 # Conversation Storage (optional - database is default)
 LLM_CONVERSATION_DRIVER=database   # or 'session'
@@ -100,6 +102,7 @@ return [
 
         'lmstudio' => [
             'driver' => 'lmstudio',
+            'protocol' => env('LMSTUDIO_PROTOCOL', 'http'),
             'host' => env('LMSTUDIO_HOST', '127.0.0.1'),
             'port' => env('LMSTUDIO_PORT', 1234),
             'api_key' => env('LMSTUDIO_API_KEY'),

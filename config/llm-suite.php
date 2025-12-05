@@ -45,8 +45,10 @@ return [
 
         'lmstudio' => [
             'driver' => 'lmstudio',
+            'protocol' => env('LMSTUDIO_PROTOCOL', 'http'),
             'host' => env('LMSTUDIO_HOST', '127.0.0.1'),
             'port' => env('LMSTUDIO_PORT', 1234),
+            // 'base_url' => env('LMSTUDIO_BASE_URL'), // Optional: override protocol/host/port
             'api_key' => env('LMSTUDIO_API_KEY'), // Optional - LM Studio doesn't require auth by default
             'chat_model' => env('LMSTUDIO_CHAT_MODEL', 'local-model'),
             'timeout' => env('LMSTUDIO_TIMEOUT', 120), // Local models can be slow
