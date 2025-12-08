@@ -51,7 +51,7 @@ php artisan vendor:publish --tag=llm-suite-config
 
 ## Configuration
 
-Add your API keys to your `.env` file:
+Add your API keys to your `.env` file (Please keep keys and API Safe and do not share with anyone):
 
 ```env
 # Default provider
