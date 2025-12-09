@@ -43,10 +43,15 @@ Install via Composer:
 composer require oziri/laravel-llm-suite
 ```
 
-Publish the configuration file:
+Publish the configuration file and migrations:
 
 ```bash
+# Publish both config and migrations (recommended)
+php artisan vendor:publish --tag=llm-suite
+
+# Or publish separately:
 php artisan vendor:publish --tag=llm-suite-config
+php artisan vendor:publish --tag=llm-suite-migrations
 ```
 
 ## Configuration

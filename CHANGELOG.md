@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Migration files not being published when using `--tag=llm-suite-config` - Added combined `llm-suite` tag to publish both config and migrations together
+
 ## [0.2.0] - 2024-12-08
 
 ### Added
