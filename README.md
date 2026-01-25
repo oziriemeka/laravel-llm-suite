@@ -21,7 +21,7 @@ A unified, driver-based Laravel toolkit for working with multiple LLM providers 
 | Provider | Driver | Chat | Image | Models List |
 |----------|--------|:----:|:-----:|:-----------:|
 | **OpenAI** | `openai` | Yes | Yes | Yes |
-| **Anthropic** | `anthropic` | Yes | - | - |
+| **Anthropic** | `anthropic` | Yes | - | Yes |
 | **LM Studio** | `lmstudio` | Yes | - | Yes |
 | **Dummy** | `dummy` | Yes | Yes | - |
 
@@ -411,6 +411,33 @@ $response = Llm::using('lmstudio')->chat('Hello!', [
 ```env
 LLM_SUITE_DEFAULT=lmstudio
 ```
+
+### Anthropic Provider
+
+#### Available Models
+
+```php
+use Llm;
+
+// List available Claude models
+$client = Llm::client('anthropic');
+
+if ($client->isAvailable()) {
+    $models = $client->getAvailableModels();
+    
+    foreach ($models as $model) {
+        echo "- {$model}\n";
+    }
+}
+
+// Example output:
+// - claude-3-5-sonnet-20241022
+// - claude-3-opus-20240229
+// - claude-3-sonnet-20240229
+// - claude-3-haiku-20240307
+```
+
+**Note**: Anthropic Claude models support chat completions and image analysis but do not support image generation.
 
 ### Working with Message History
 
