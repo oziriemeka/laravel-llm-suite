@@ -31,12 +31,6 @@ class AnthropicClientTest extends TestCase
         $this->client = new AnthropicClient($this->config);
     }
 
-    protected function tearDown(): void
-    {
-        Http::assertNothingSent();
-        parent::tearDown();
-    }
-
     /**
      * Test constructor throws exception when API key is missing.
      */
@@ -188,7 +182,7 @@ class AnthropicClientTest extends TestCase
         Http::assertSent(function ($request) {
             $expectedApiKey = $this->config['api_key'];
             $expectedBaseUrl = $this->config['base_url'];
-            
+
             return $request->hasHeader('x-api-key', $expectedApiKey) &&
                    $request->hasHeader('anthropic-version', '2023-06-01') &&
                    $request->url() === "{$expectedBaseUrl}/models";
