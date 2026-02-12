@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Model enumeration support for Anthropic provider via `getAvailableModels()` method
+- `isAvailable()` method for Anthropic provider to check API accessibility
+- Unit tests for Anthropic model listing functionality
+
+### Changed
+- Updated README.md to reflect Anthropic provider feature parity with other providers
+
 ### Fixed
 - Migration files not being published when using `--tag=llm-suite-config` - Added combined `llm-suite` tag to publish both config and migrations together
 

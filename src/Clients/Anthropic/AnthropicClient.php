@@ -7,6 +7,7 @@ namespace Oziri\LlmSuite\Clients\Anthropic;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Oziri\LlmSuite\Contracts\ChatClient;
+use Oziri\LlmSuite\Exceptions\ProviderConfigException;
 use Oziri\LlmSuite\Exceptions\ProviderRequestException;
 use Oziri\LlmSuite\Support\ChatResponse;
 use Oziri\LlmSuite\Support\TokenUsage;
@@ -43,13 +44,25 @@ class AnthropicClient implements ChatClient
     protected const ENDPOINT_MESSAGES = '/messages';
 
     /**
+     * API endpoint for listing models.
+     */
+    protected const ENDPOINT_MODELS = '/models';
+
+    /**
      * Error message for failed chat requests.
      */
     protected const ERROR_CHAT_FAILED = 'Anthropic chat request failed';
 
     public function __construct(
         protected array $config
-    ) {}
+    ) {
+        // Validate API key is required
+        if (!isset($config['api_key']) || empty($config['api_key'])) {
+            throw new ProviderConfigException(
+                'API key is required for Anthropic provider'
+            );
+        }
+    }
 
     /**
      * Get a configured HTTP client for Anthropic API requests.
@@ -72,7 +85,6 @@ class AnthropicClient implements ChatClient
     {
         $startTime = microtime(true);
 
-        // Anthropic uses a different message format
         $messages = $options['messages'] ?? [
             ['role' => 'user', 'content' => $prompt],
         ];
@@ -83,12 +95,10 @@ class AnthropicClient implements ChatClient
             'max_tokens' => $options['max_tokens'] ?? self::DEFAULT_MAX_TOKENS,
         ];
 
-        // Anthropic handles system prompts separately
         if (isset($options['system'])) {
             $payload['system'] = $options['system'];
         }
 
-        // Add optional parameters if provided
         if (isset($options['temperature'])) {
             $payload['temperature'] = $options['temperature'];
         }
@@ -111,7 +121,6 @@ class AnthropicClient implements ChatClient
 
         $data = $response->json();
         
-        // Anthropic returns content as an array of content blocks
         $content = '';
         if (isset($data['content']) && is_array($data['content'])) {
             foreach ($data['content'] as $block) {
@@ -121,7 +130,6 @@ class AnthropicClient implements ChatClient
             }
         }
 
-        // Parse token usage from response (Anthropic uses input_tokens/output_tokens)
         $tokenUsage = isset($data['usage']) 
             ? TokenUsage::fromArray($data['usage']) 
             : TokenUsage::empty();
@@ -134,6 +142,55 @@ class AnthropicClient implements ChatClient
             latencyMs: $latencyMs,
             tokenUsage: $tokenUsage,
         );
+    }
+
+    /**
+     * Check if the Anthropic API is accessible.
+     *
+     * @return bool True if the API is accessible, false otherwise
+     */
+    public function isAvailable(): bool
+    {
+        try {
+            $response = $this->http()->get(self::ENDPOINT_MODELS);
+            return $response->successful();
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get the list of available models from Anthropic.
+     *
+     * @return array<int, string> Array of model identifiers
+     * @throws \Oziri\LlmSuite\Exceptions\ProviderRequestException
+     */
+    public function getAvailableModels(): array
+    {
+        try {
+            $response = $this->http()->get(self::ENDPOINT_MODELS);
+
+            if (! $response->successful()) {
+                throw ProviderRequestException::fromResponse(
+                    'Failed to fetch Anthropic models',
+                    $response
+                );
+            }
+
+            $data = $response->json();
+            $models = is_array($data) ? $data : [];
+
+            return array_map(
+                fn($model) => $model['id'] ?? '',
+                array_filter($models, fn($model) => !empty($model['id'] ?? ''))
+            );
+        } catch (ProviderRequestException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw new ProviderRequestException(
+                'Error fetching Anthropic models: ' . $e->getMessage()
+            );
+        }
     }
 }
 
