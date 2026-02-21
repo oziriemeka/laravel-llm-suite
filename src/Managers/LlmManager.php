@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Oziri\LlmSuite\Clients\Anthropic\AnthropicClient;
 use Oziri\LlmSuite\Clients\Dummy\DummyClient;
 use Oziri\LlmSuite\Clients\LmStudio\LmStudioClient;
+use Oziri\LlmSuite\Clients\ModelsLab\ModelsLabClient;
 use Oziri\LlmSuite\Clients\OpenAI\OpenAIClient;
 use Oziri\LlmSuite\Contracts\ChatClient;
 use Oziri\LlmSuite\Contracts\ConversationStore;
@@ -177,6 +178,7 @@ class LlmManager
             'openai' => $this->createOpenAiClient($config),
             'anthropic' => $this->createAnthropicClient($config),
             'lmstudio' => $this->createLmStudioClient($config),
+            'modelslab' => $this->createModelsLabClient($config),
             'dummy' => $this->createDummyClient($config),
             default => throw ProviderConfigException::unsupportedDriver($driver ?? 'null'),
         };
@@ -204,6 +206,14 @@ class LlmManager
     protected function createLmStudioClient(array $config): LmStudioClient
     {
         return new LmStudioClient($config);
+    }
+
+    /**
+     * Create a ModelsLab client instance.
+     */
+    protected function createModelsLabClient(array $config): ModelsLabClient
+    {
+        return new ModelsLabClient($config);
     }
 
     /**
