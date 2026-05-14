@@ -54,6 +54,13 @@ return [
             'timeout' => env('LMSTUDIO_TIMEOUT', 120), // Local models can be slow
         ],
 
+        'modelslab' => [
+            'driver' => 'modelslab',
+            'api_key' => env('MODELSLAB_API_KEY'),
+            'image_model' => env('MODELSLAB_IMAGE_MODEL', 'flux'),
+            'timeout' => env('MODELSLAB_TIMEOUT', 120),
+        ],
+
         'dummy' => [
             'driver' => 'dummy',
             // Optional: set default responses for testing

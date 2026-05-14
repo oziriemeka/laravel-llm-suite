@@ -23,11 +23,13 @@ A unified, driver-based Laravel toolkit for working with multiple LLM providers 
 | **OpenAI** | `openai` | Yes | Yes | Yes |
 | **Anthropic** | `anthropic` | Yes | - | Yes |
 | **LM Studio** | `lmstudio` | Yes | - | Yes |
+| **ModelsLab** | `modelslab` | - | Yes | - |
 | **Dummy** | `dummy` | Yes | Yes | - |
 
 - **OpenAI** - GPT-4, GPT-4.1, DALL-E 3, and other OpenAI models
 - **Anthropic** - Claude 3.5 Sonnet, Claude 3 Opus, and other Claude models
 - **LM Studio** - Run any open-source LLM locally (Llama, Mistral, Phi, etc.)
+- **ModelsLab** - Flux, SDXL, Stable Diffusion, and 10,000+ community models for image generation
 - **Dummy** - For testing and offline development (returns configurable mock responses)
 
 ## Requirements
